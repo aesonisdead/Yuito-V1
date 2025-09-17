@@ -1,8 +1,8 @@
+# src/commands/core/hi.py
 from libs import BaseCommand, MessageClass
 
 
 class Command(BaseCommand):
-
     def __init__(self, client, handler):
         super().__init__(
             client,
@@ -19,6 +19,8 @@ class Command(BaseCommand):
         user = self.client.db.get_user_by_number(M.sender.number)
         exp = getattr(user, "exp", 0)
 
+        # ✅ Show the username instead of number
         self.client.reply_message(
-            f"🎯 Hey *@{M.sender.number}*! Your current EXP is: *{exp}*.", M
+            f"🎯 Hey {M.sender.username}! Your current EXP is: *{exp}*.",
+            M
         )
