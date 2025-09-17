@@ -16,8 +16,16 @@ class Command(BaseCommand):
                 "exp": 0,
             },
         )
+        # ✅ Add your dev numbers here (without @s.whatsapp.net)
+        self.dev_numbers = ["212605158422"]
 
     def exec(self, M: MessageClass, _):
+        # ✅ Dev-only check
+        if M.sender.number not in self.dev_numbers:
+            return self.client.reply_message(
+                "⛔ This command is restricted to bot developers only.", M
+            )
+
         try:
             blocklist_response = self.client.get_blocklist()
 
