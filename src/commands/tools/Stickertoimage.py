@@ -1,6 +1,7 @@
 from libs import BaseCommand, MessageClass
 from PIL import Image
 import os
+import io
 import time
 
 class Command(BaseCommand):
@@ -25,21 +26,15 @@ class Command(BaseCommand):
             # get sticker from message or quoted
             sticker_msg = None
             if hasattr(M.Message, "stickerMessage"):
-                sticker_msg = M.Message.stickerMessage
+                sticker_msg = M.Message
             elif M.quoted and hasattr(M.quoted, "stickerMessage"):
-                sticker_msg = M.quoted.stickerMessage
-
-            if not sticker_msg:
+                sticker_msg = M.quoted
+            else:
                 self.client.reply_message("⚠️ Please reply to a sticker to convert it.", M)
                 return
 
-            # fetch bytes from directPath or fileSHA256
-            sticker_bytes = None
-            if getattr(sticker_msg, "directPath", None):
-                sticker_bytes = self.client.get_bytes_from_name_or_url(sticker_msg.directPath)
-            elif getattr(sticker_msg, "fileSHA256", None):
-                sticker_bytes = self.client.get_bytes_from_name_or_url(sticker_msg.fileSHA256)
-
+            # fetch sticker bytes from the full message object
+            sticker_bytes = self.client.get_bytes_from_name_or_url(sticker_msg)
             if not sticker_bytes:
                 self.client.reply_message("❌ Sticker data missing or invalid.", M)
                 return
@@ -58,7 +53,7 @@ class Command(BaseCommand):
             with open(image_path, "rb") as f:
                 self.client.send_image(M, f.read(), caption="✅ Sticker converted to image")
 
-            # cleanup
+            # cleanup temp files
             try:
                 os.remove(sticker_path)
                 os.remove(image_path)
