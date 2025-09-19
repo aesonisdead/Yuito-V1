@@ -30,9 +30,8 @@ class Command(BaseCommand):
             # Normalize JIDs
             target_jids = [self.client.build_jid(str(u.number).lstrip("+")) for u in targets]
 
-            # Check participants list
-            group_info = self.client.get_group_metadata(M.gcjid)
-            participants = [p.jid for p in group_info.participants]
+            # Use metadata from the message object
+            participants = [p.jid for p in (M.group_metadata.participants or [])]
 
             valid_targets = [jid for jid in target_jids if jid in participants]
 
