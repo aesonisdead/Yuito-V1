@@ -2,7 +2,6 @@ from libs import BaseCommand, MessageClass
 from PIL import Image
 import os
 import io
-import base64
 import time
 
 class Command(BaseCommand):
@@ -23,7 +22,7 @@ class Command(BaseCommand):
 
     def exec(self, M: MessageClass, _):
         try:
-            # Check sticker in current message or quoted
+            # get sticker from message or quoted
             sticker_msg = None
             if hasattr(M.Message, "stickerMessage"):
                 sticker_msg = M.Message.stickerMessage
@@ -34,29 +33,38 @@ class Command(BaseCommand):
                 self.client.reply_message("⚠️ Please reply to a sticker to convert it.", M)
                 return
 
-            # Try to get bytes from pngThumbnail (base64)
-            sticker_bytes = None
-            if hasattr(sticker_msg, "pngThumbnail") and sticker_msg.pngThumbnail:
-                sticker_bytes = base64.b64decode(sticker_msg.pngThumbnail)
-            else:
+            # build a “downloadable media object” for Neonize
+            media_obj = {
+                "directPath": getattr(sticker_msg, "directPath", None),
+                "fileEncSHA256": getattr(sticker_msg, "fileEncSHA256", None),
+                "fileSHA256": getattr(sticker_msg, "fileSHA256", None),
+                "mediaKey": getattr(sticker_msg, "mediaKey", None),
+                "mimetype": getattr(sticker_msg, "mimetype", None),
+                "width": getattr(sticker_msg, "width", None),
+                "height": getattr(sticker_msg, "height", None),
+            }
+
+            # fetch the sticker bytes from WhatsApp
+            sticker_bytes = self.client.get_bytes_from_name_or_url(media_obj)
+            if not sticker_bytes:
                 self.client.reply_message("❌ Sticker data missing or invalid.", M)
                 return
 
-            # Save temp WEBP
+            # save temp WEBP file
             sticker_path = os.path.join(self.temp_dir, f"sticker_{int(time.time())}.webp")
             image_path = os.path.join(self.temp_dir, f"converted_{int(time.time())}.png")
             with open(sticker_path, "wb") as f:
                 f.write(sticker_bytes)
 
-            # Convert WEBP → PNG
+            # convert WEBP → PNG
             image = Image.open(sticker_path).convert("RGBA")
             image.save(image_path, format="PNG")
 
-            # Send converted image
+            # send the PNG image back
             with open(image_path, "rb") as f:
                 self.client.send_image(M, f.read(), caption="✅ Sticker converted to image")
 
-            # Cleanup temp files
+            # cleanup temp files
             try:
                 os.remove(sticker_path)
                 os.remove(image_path)
