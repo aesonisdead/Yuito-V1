@@ -1,7 +1,5 @@
 from libs import BaseCommand, MessageClass
 from PIL import Image
-import io
-import asyncio
 import os
 import time
 
@@ -22,9 +20,6 @@ class Command(BaseCommand):
             os.makedirs(self.temp_dir)
 
     def exec(self, M: MessageClass, _):
-        asyncio.create_task(self.run(M))
-
-    async def run(self, M: MessageClass):
         try:
             # Check if the message is a sticker or quoted sticker
             sticker_msg = None
@@ -34,15 +29,13 @@ class Command(BaseCommand):
                 sticker_msg = M.quoted.stickerMessage
 
             if not sticker_msg:
-                await self.client.reply_message(
-                    "⚠️ Please reply to a sticker to convert it.", M
-                )
+                self.client.reply_message("⚠️ Please reply to a sticker to convert it.", M)
                 return
 
             # Get sticker bytes
-            sticker_bytes = await self.client.get_bytes_from_name_or_url(sticker_msg)
+            sticker_bytes = self.client.get_bytes_from_name_or_url(sticker_msg)
             if not sticker_bytes or not isinstance(sticker_bytes, (bytes, bytearray)):
-                await self.client.reply_message("❌ Sticker data missing or invalid.", M)
+                self.client.reply_message("❌ Sticker data missing or invalid.", M)
                 return
 
             # Save temp file
@@ -57,9 +50,9 @@ class Command(BaseCommand):
 
             # Send converted image
             with open(image_path, "rb") as f:
-                await self.client.send_image(M, f.read(), caption="✅ Sticker converted to image")
+                self.client.send_image(M, f.read(), caption="✅ Sticker converted to image")
 
-            # Cleanup temp files (after send)
+            # Cleanup temp files
             try:
                 os.remove(sticker_path)
                 os.remove(image_path)
@@ -67,5 +60,5 @@ class Command(BaseCommand):
                 self.client.log.warning(f"[ToImgCleanup] {cleanup_err}")
 
         except Exception as e:
-            await self.client.reply_message(f"❌ ToImgError: {e}", M)
+            self.client.reply_message(f"❌ ToImgError: {e}", M)
             self.client.log.error(f"[ToImgError] {e}")
