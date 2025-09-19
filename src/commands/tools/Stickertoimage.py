@@ -1,6 +1,8 @@
 from libs import BaseCommand, MessageClass
 from PIL import Image
 import os
+import io
+import base64
 import time
 
 class Command(BaseCommand):
@@ -21,7 +23,7 @@ class Command(BaseCommand):
 
     def exec(self, M: MessageClass, _):
         try:
-            # check sticker in current message or quoted
+            # Check sticker in current message or quoted
             sticker_msg = None
             if hasattr(M.Message, "stickerMessage"):
                 sticker_msg = M.Message.stickerMessage
@@ -32,27 +34,29 @@ class Command(BaseCommand):
                 self.client.reply_message("⚠️ Please reply to a sticker to convert it.", M)
                 return
 
-            # download sticker bytes properly using client helper
-            sticker_bytes = self.client.download_media(sticker_msg, "sticker")
-            if not sticker_bytes:
+            # Try to get bytes from pngThumbnail (base64)
+            sticker_bytes = None
+            if hasattr(sticker_msg, "pngThumbnail") and sticker_msg.pngThumbnail:
+                sticker_bytes = base64.b64decode(sticker_msg.pngThumbnail)
+            else:
                 self.client.reply_message("❌ Sticker data missing or invalid.", M)
                 return
 
-            # save temp webp
+            # Save temp WEBP
             sticker_path = os.path.join(self.temp_dir, f"sticker_{int(time.time())}.webp")
             image_path = os.path.join(self.temp_dir, f"converted_{int(time.time())}.png")
             with open(sticker_path, "wb") as f:
                 f.write(sticker_bytes)
 
-            # convert WEBP → PNG
+            # Convert WEBP → PNG
             image = Image.open(sticker_path).convert("RGBA")
             image.save(image_path, format="PNG")
 
-            # send converted image
+            # Send converted image
             with open(image_path, "rb") as f:
                 self.client.send_image(M, f.read(), caption="✅ Sticker converted to image")
 
-            # cleanup temp files
+            # Cleanup temp files
             try:
                 os.remove(sticker_path)
                 os.remove(image_path)
