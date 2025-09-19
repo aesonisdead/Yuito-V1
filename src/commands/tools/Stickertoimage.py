@@ -1,5 +1,7 @@
 from libs import BaseCommand, MessageClass
-import pprint
+from PIL import Image
+import os
+import time
 
 class Command(BaseCommand):
     def __init__(self, client, handler):
@@ -7,15 +9,19 @@ class Command(BaseCommand):
             client,
             handler,
             {
-                "command": "toimgdebug",
+                "command": "toimg",
                 "category": "tools",
-                "description": {"content": "Debug sticker message attributes"},
-                "exp": 0
+                "description": {"content": "Convert a sticker to an image"},
+                "exp": 1
             },
         )
+        self.temp_dir = "./temp"
+        if not os.path.exists(self.temp_dir):
+            os.makedirs(self.temp_dir)
 
     def exec(self, M: MessageClass, _):
         try:
+            # check sticker in current message or quoted
             sticker_msg = None
             if hasattr(M.Message, "stickerMessage"):
                 sticker_msg = M.Message.stickerMessage
@@ -23,28 +29,36 @@ class Command(BaseCommand):
                 sticker_msg = M.quoted.stickerMessage
 
             if not sticker_msg:
-                self.client.reply_message("⚠️ Please reply to a sticker to debug it.", M)
+                self.client.reply_message("⚠️ Please reply to a sticker to convert it.", M)
                 return
 
-            # Collect attributes
-            attrs = dir(sticker_msg)
+            # download sticker bytes properly using client helper
+            sticker_bytes = self.client.download_media(sticker_msg, "sticker")
+            if not sticker_bytes:
+                self.client.reply_message("❌ Sticker data missing or invalid.", M)
+                return
+
+            # save temp webp
+            sticker_path = os.path.join(self.temp_dir, f"sticker_{int(time.time())}.webp")
+            image_path = os.path.join(self.temp_dir, f"converted_{int(time.time())}.png")
+            with open(sticker_path, "wb") as f:
+                f.write(sticker_bytes)
+
+            # convert WEBP → PNG
+            image = Image.open(sticker_path).convert("RGBA")
+            image.save(image_path, format="PNG")
+
+            # send converted image
+            with open(image_path, "rb") as f:
+                self.client.send_image(M, f.read(), caption="✅ Sticker converted to image")
+
+            # cleanup temp files
             try:
-                as_dict = sticker_msg.__dict__
-            except:
-                as_dict = str(sticker_msg)
-
-            debug_text = "🔎 Sticker Debug:\n\n"
-            debug_text += f"Attributes: {attrs}\n\n"
-            debug_text += f"Dict/Content:\n{pprint.pformat(as_dict, indent=2, width=80)}"
-
-            # Send back in chunks if too long
-            if len(debug_text) > 4000:  # WhatsApp message limit
-                parts = [debug_text[i:i+4000] for i in range(0, len(debug_text), 4000)]
-                for p in parts:
-                    self.client.reply_message(p, M)
-            else:
-                self.client.reply_message(debug_text, M)
+                os.remove(sticker_path)
+                os.remove(image_path)
+            except Exception as cleanup_err:
+                self.client.log.warning(f"[ToImgCleanup] {cleanup_err}")
 
         except Exception as e:
-            self.client.reply_message(f"❌ DebugError: {e}", M)
-            self.client.log.error(f"[StickerDebugError] {e}")
+            self.client.reply_message(f"❌ ToImgError: {e}", M)
+            self.client.log.error(f"[ToImgError] {e}")
