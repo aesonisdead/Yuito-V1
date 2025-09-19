@@ -10,8 +10,8 @@ class Command(BaseCommand):
             client,
             handler,
             {
-                "command": "stickertoimage",   # main command
-                "aliases": ["toimg"],          # alias(es)
+                "command": "stickertoimage",
+                "aliases": ["toimg"],
                 "category": "tools",
                 "description": {"content": "Convert a sticker to an image"},
                 "exp": 1
@@ -23,37 +23,37 @@ class Command(BaseCommand):
 
     def exec(self, M: MessageClass, _):
         try:
-            # get sticker from message or quoted
+            # Get sticker from message or quoted
             sticker_msg = None
             if hasattr(M.Message, "stickerMessage"):
-                sticker_msg = M.Message
+                sticker_msg = M.Message.stickerMessage
             elif M.quoted and hasattr(M.quoted, "stickerMessage"):
-                sticker_msg = M.quoted
+                sticker_msg = M.quoted.stickerMessage
             else:
                 self.client.reply_message("⚠️ Please reply to a sticker to convert it.", M)
                 return
 
-            # fetch sticker bytes from the full message object
-            sticker_bytes = self.client.get_bytes_from_name_or_url(sticker_msg)
+            # Download sticker bytes using Neonize's download method
+            sticker_bytes = self.client.download_media(sticker_msg)
             if not sticker_bytes:
                 self.client.reply_message("❌ Sticker data missing or invalid.", M)
                 return
 
-            # save temp WEBP
+            # Save temp WEBP file
             sticker_path = os.path.join(self.temp_dir, f"sticker_{int(time.time())}.webp")
             image_path = os.path.join(self.temp_dir, f"converted_{int(time.time())}.png")
             with open(sticker_path, "wb") as f:
                 f.write(sticker_bytes)
 
-            # convert WEBP → PNG
+            # Convert WEBP → PNG
             image = Image.open(sticker_path).convert("RGBA")
             image.save(image_path, format="PNG")
 
-            # send PNG back
+            # Send converted image
             with open(image_path, "rb") as f:
                 self.client.send_image(M, f.read(), caption="✅ Sticker converted to image")
 
-            # cleanup temp files
+            # Cleanup temp files
             try:
                 os.remove(sticker_path)
                 os.remove(image_path)
