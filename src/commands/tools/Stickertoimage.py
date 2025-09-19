@@ -10,8 +10,9 @@ class Command(BaseCommand):
             client,
             handler,
             {
-                "command": "toimg",
+                "command": "stickertoimage",
                 "category": "tools",
+                "aliases": ["toimg"],
                 "description": {"content": "Convert a sticker to an image"},
                 "exp": 1
             },
