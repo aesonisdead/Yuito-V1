@@ -69,19 +69,20 @@ class Void(NewClient):
         self.db = Database(config.uri)
         self.log = log
 
-    # ---- Patched send_message with mentions + flexible kwargs ----
-    def send_message(self, jid: str, text: str, mentions: list[str] | None = None, **kwargs):
-        """
-        Send a WhatsApp message with optional mentions.
-        Accepts any extra kwargs for internal functions like reply_message.
-        """
-        payload = {"text": text}
-        if mentions:
-            payload["contextInfo"] = {"mentionedJid": mentions}
+        # -----------------------------
+        # Patch send_message for mentions
+        # -----------------------------
+        _orig_send = self.send_message  # save original method
 
-        # Call the original internal sending function
-        self._send(payload, jid, **kwargs)
-    # ------------------------------------------------------------
+        def _patched_send(jid: str, text: str, mentions: list[str] | None = None, **kwargs):
+            if mentions:
+                if "contextInfo" not in kwargs:
+                    kwargs["contextInfo"] = {}
+                kwargs["contextInfo"]["mentionedJid"] = mentions
+            return _orig_send(jid, text, **kwargs)
+
+        self.send_message = _patched_send
+        # -----------------------------
 
     def on_message(self, _: NewClient, message: MessageEv):
         if message.Info.ID not in self.__msg_id:
