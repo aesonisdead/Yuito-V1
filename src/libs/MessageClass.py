@@ -15,9 +15,12 @@ class MessageClass:
         self.chat = "group" if self.Info.MessageSource.IsGroup else "dm"
 
         sender_number = self.Info.MessageSource.Sender.User
+        sender_jid = f"{sender_number}@c.us"  # full WhatsApp JID
+
         self.sender = DynamicConfig(
             {
-                "number": sender_number,
+                "number": sender_number,   # just numeric ID
+                "jid": sender_jid,         # full WhatsApp JID for mentions
                 "username": client.contact.get_contact(
                     client.build_jid(sender_number)
                 ).PushName,
@@ -38,9 +41,11 @@ class MessageClass:
 
                 if ctx_info.HasField("participant"):
                     quoted_number = ctx_info.participant.split("@")[0]
+                    quoted_jid = f"{quoted_number}@c.us"
                     self.quoted_user = DynamicConfig(
                         {
                             "number": quoted_number,
+                            "jid": quoted_jid,
                             "username": client.contact.get_contact(
                                 client.build_jid(quoted_number)
                             ).PushName,
@@ -53,6 +58,7 @@ class MessageClass:
                     DynamicConfig(
                         {
                             "number": number,
+                            "jid": jid,
                             "username": client.contact.get_contact(
                                 client.build_jid(number)
                             ).PushName,
