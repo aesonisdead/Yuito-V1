@@ -19,6 +19,11 @@ class Command(BaseCommand):
         user = self.client.db.get_user_by_number(M.sender.number)
         exp = getattr(user, "exp", 0)
 
-        self.client.reply_message(
-            f"🎯 Hey *@{M.sender.number}*! Your current EXP is: *{exp}*.", M
+        jid = str(M.sender.jid)  # full WhatsApp ID (e.g., 212605158422@c.us)
+        phone = M.sender.number  # clean phone number without @c.us
+
+        self.client.send_message(
+            M.chat_id,  # reply in the same chat
+            f"🎯 Hey *@{phone}*! Your current EXP is: *{exp}*.",
+            mentions=[jid],
         )
