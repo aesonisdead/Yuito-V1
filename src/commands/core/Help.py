@@ -58,36 +58,37 @@ class Command(BaseCommand):
 I'm *Yuito* ✨
 🍀 My prefix is *"{prefix}"* ~
 
+
 *📭 Command List 📭*
 
 ❯──── Anime ────❮
-➠```!aid, !anime, !character, !cid, !husbu, !kitsune, !manga, !mid, !neko, !waifu```
+➠```#aid, #anime, #character, #cid, #husbu, #kitsune, #manga, #mid, #neko, #waifu```
 
 ❯──── Ai ────❮
-➠```!chatgpt, !gemini, !imagine, !remini```
+➠```#chatgpt, #gemini, #imagine, #remini```
     
 ❯──── Core ────❮
-➠```!blocklist, !groupinfo, !yuito, !help, !hi, !info, !leaderboard, !mods, !support, !whoami, !rank```
+➠```#blocklist, #groupinfo, #help, #hi, #info, #leaderboard, #mods, #support, #whoami, #rank```
 
 ❯──── Dev ────❮
-➠```!ban, !broadcast, !disable, !enable, !eval, !unban```
+➠```#ban, #broadcast, #disable, #enable, #eval, #unban```
 
 ❯──── Fun ────❮
-➠```!advice, !animal, !charactercheck, !fact, !coinflip, !pick, !reaction, !ship```
+➠```#advice, #animal, #charactercheck, #fact, #coinflip, #pick, #reaction, #ship```
 
 ❯──── Group ────❮
-➠```!add, !demote, !groupannounce, !poll, !groupeditlock, !grouplink, !promote, !remove, !setdesc, !setname, !setphoto, !tagall, !toggle```
+➠```#add, #demote, #groupannounce, #poll, #groupeditlock, #grouplink, #promote, #remove, #setdesc, #setname, #setphoto, #tagall, #toggle```
 
 ❯──── Media ────❮
-➠```!play, !instagram, !tiktok, !spotify, !twitter, !facebook, !image, !ytaudio, !ytsearch, !ytvideo```
+➠```#play, #instagram, #tiktok, #spotify, #twitter, #facebook, #image, #ytaudio, #ytsearch, #ytvideo```
 
 ❯──── Search ────❮
-➠```!gif, !github, !gsearch, !iplookup, !weather, !urban```
+➠```#gif, #github, #gsearch, #iplookup, #weather, #urban```
 
 ❯──── Tools ────❮
-➠```!emojimix, !translate, !emojisticker, !stickertoimage, !sticker, !stickerrename```
+➠```#emojimix, #translate, #emojisticker, #stickertoimage, #sticker, #stickerrename```
 
-📝 *Hint:* Use *!help <command_name>* for detailed info!  
+📝 *Hint:* Use *#help <command_name>* for detailed info!  
 🌟 *Arigato for Choosing Nexus!* 🌟
 """
 
