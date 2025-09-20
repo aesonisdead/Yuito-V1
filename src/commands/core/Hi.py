@@ -14,11 +14,17 @@ class Command(BaseCommand):
         )
 
     def exec(self, M: MessageClass, _):
-        user = self.client.db.get_user_by_number(M.sender.number)
-        exp = getattr(user, "exp", 0)
+        # Get user info
+        user_number = M.sender.number
+        user_jid = M.sender.jid  # full WhatsApp ID
+        exp = getattr(M.sender, "exp", 0) or 0
 
+        # Build the message text
+        text = f"🎯 Hey *@{user_number}*! Your current EXP is: *{exp}*."
+
+        # Send message and tag user
         self.client.send_message(
-            M.gcjid,
-            f"🎯 Hey @{M.sender.number}! Your current EXP is: *{exp}*.",
-            mentions=[M.sender.jid],  # now properly tags the user
+            M.gcjid if M.chat == "group" else user_jid,
+            text,
+            mentions=[user_jid]  # this tags the user in the message
         )
