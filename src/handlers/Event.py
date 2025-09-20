@@ -29,13 +29,13 @@ class Event:
 
     def on_groupevent(self, event: GroupInfoEv):
     group = self.__client.db.get_group_by_number(event.JID.User)
-    if not group.events:
+      if not group.events:
         return
 
     jid = str(event.JID)
 
-    try:
-        if len(event.Leave) > 0:
+      try:
+          if len(event.Leave) > 0:
             user = str(event.Leave[0].User)
             phone = user.replace("@c.us", "")
             self.__client.send_message(
@@ -44,7 +44,7 @@ class Event:
                 mentions=[user]
             )
 
-        elif len(event.Join) > 0:
+          elif len(event.Join) > 0:
             user = str(event.Join[0].User)
             phone = user.replace("@c.us", "")
             self.__client.send_message(
@@ -53,7 +53,7 @@ class Event:
                 mentions=[user]
             )
 
-        elif len(event.Promote) > 0:
+          elif len(event.Promote) > 0:
             user = str(event.Promote[0].User)
             promoter = str(event.Sender.User)
             phone = user.replace("@c.us", "")
@@ -64,7 +64,7 @@ class Event:
                 mentions=[user, promoter]
             )
 
-        elif len(event.Demote) > 0:
+          elif len(event.Demote) > 0:
             user = str(event.Demote[0].User)
             demoter = str(event.Sender.User)
             phone = user.replace("@c.us", "")
@@ -75,7 +75,7 @@ class Event:
                 mentions=[user, demoter]
             )
 
-        elif len(event.Announce) > 0:
+          elif len(event.Announce) > 0:
             status = "enabled" if event.Announce.IsAnnounce else "disabled"
             sender = str(event.Sender.User)
             sender_phone = sender.replace("@c.us", "")
