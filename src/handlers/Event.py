@@ -3,13 +3,14 @@ from neonize.events import (
     GroupInfoEv,
     JoinedGroupEv,
     CallOfferEv,
+    DeviceListUpdateEv,  # import the device update event
 )
-
 
 class Event:
     def __init__(self, client: Void):
         self.__client = client
 
+    # --- Existing handlers ---
     def on_call(self, event: CallOfferEv):
         user_id = event.basicCallMeta.callCreator.User
         jid = self.__client.build_jid(user_id)
@@ -66,3 +67,18 @@ class Event:
                 )
         except Exception as e:
             self.__client.log.error(f"[GroupUpdateError] {e}")
+
+    # --- NEW: Device List Update handler ---
+    def on_device_list_update(self, event: DeviceListUpdateEv):
+        """
+        Automatically sync LID/device hashes to prevent warnings.
+        """
+        try:
+            lid = event.LID
+            action = "removed" if event.Removed else "updated"
+            self.__client.log.info(f"[DeviceList] LID {lid} {action}, syncing hash...")
+
+            # Update the local hash in your client/session
+            self.__client.update_device_hash(lid, event.NewHash)  # pseudo-method, replace with your actual client method
+        except Exception as e:
+            self.__client.log.error(f"[DeviceListSyncError] {e}")
