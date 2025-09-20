@@ -70,16 +70,15 @@ class Void(NewClient):
         self.log = log
 
         # -----------------------------
-        # Patch send_message for mentions
+        # Patch send_message for mentions (safe)
         # -----------------------------
-        _orig_send = self.send_message  # save original method
+        _orig_send = super().send_message  # save original method
 
         def _patched_send(jid: str, text: str, mentions: list[str] | None = None, **kwargs):
+            payload = {"text": text}
             if mentions:
-                if "contextInfo" not in kwargs:
-                    kwargs["contextInfo"] = {}
-                kwargs["contextInfo"]["mentionedJid"] = mentions
-            return _orig_send(jid, text, **kwargs)
+                payload["mentionedJid"] = mentions  # correct field for mentions
+            return _orig_send(jid, **payload, **kwargs)
 
         self.send_message = _patched_send
         # -----------------------------
