@@ -28,41 +28,62 @@ class Event:
         )
 
     def on_groupevent(self, event: GroupInfoEv):
-        group = self.__client.db.get_group_by_number(event.JID.User)
+    group = self.__client.db.get_group_by_number(event.JID.User)
+    if not group.events:
+        return
 
-        if not group.events:
-            return
+    jid = str(event.JID)
 
-        jid = event.JID
+    try:
+        if len(event.Leave) > 0:
+            user = str(event.Leave[0].User)
+            phone = user.replace("@c.us", "")
+            self.__client.send_message(
+                jid,
+                f"👋 @{phone} left the chat.",
+                mentions=[user]
+            )
 
-        try:
-            if len(event.Leave) > 0:
-                user = event.Leave[0].User
-                self.__client.send_message(jid, f"👋 @{user} left the chat.")
+        elif len(event.Join) > 0:
+            user = str(event.Join[0].User)
+            phone = user.replace("@c.us", "")
+            self.__client.send_message(
+                jid,
+                f"👤 @{phone} joined the chat.",
+                mentions=[user]
+            )
 
-            elif len(event.Join) > 0:
-                user = event.Join[0].User
-                self.__client.send_message(jid, f"👤 @{user} joined the chat.")
+        elif len(event.Promote) > 0:
+            user = str(event.Promote[0].User)
+            promoter = str(event.Sender.User)
+            phone = user.replace("@c.us", "")
+            promoter_phone = promoter.replace("@c.us", "")
+            self.__client.send_message(
+                jid,
+                f"⬆️ @{phone} was *promoted* by @{promoter_phone}.",
+                mentions=[user, promoter]
+            )
 
-            elif len(event.Promote) > 0:
-                user = event.Promote[0].User
-                promoter = event.Sender.User
-                self.__client.send_message(
-                    jid, f"⬆️ @{user} was *promoted* by @{promoter}."
-                )
+        elif len(event.Demote) > 0:
+            user = str(event.Demote[0].User)
+            demoter = str(event.Sender.User)
+            phone = user.replace("@c.us", "")
+            demoter_phone = demoter.replace("@c.us", "")
+            self.__client.send_message(
+                jid,
+                f"⬇️ @{phone} was *demoted* by @{demoter_phone}.",
+                mentions=[user, demoter]
+            )
 
-            elif len(event.Demote) > 0:
-                user = event.Demote[0].User
-                demoter = event.Sender.User
-                self.__client.send_message(
-                    jid, f"⬇️ @{user} was *demoted* by @{demoter}."
-                )
+        elif len(event.Announce) > 0:
+            status = "enabled" if event.Announce.IsAnnounce else "disabled"
+            sender = str(event.Sender.User)
+            sender_phone = sender.replace("@c.us", "")
+            self.__client.send_message(
+                jid,
+                f"📢 Announcement mode was *{status}* by @{sender_phone}.",
+                mentions=[sender]
+            )
 
-            elif len(event.Announce) > 0:
-                status = "enabled" if event.Announce.IsAnnounce else "disabled"
-                self.__client.send_message(
-                    jid,
-                    f"📢 Announcement mode was *{status}* by @{event.Sender.User}.",
-                )
-        except Exception as e:
-            self.__client.log.error(f"[GroupUpdateError] {e}")
+    except Exception as e:
+        self.__client.log.error(f"[GroupUpdateError] {e}")
