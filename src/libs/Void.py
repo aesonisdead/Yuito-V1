@@ -15,16 +15,12 @@ from neonize.events import (
     event,
 )
 
-
 sys.path.insert(0, os.getcwd())
-
 
 def interrupted(*_):
     event.set()
 
-
 log.setLevel(logging.INFO)
-
 
 class Void(NewClient):
     def __init__(self, db_path, config, log):
@@ -32,7 +28,7 @@ class Void(NewClient):
 
         self.__msg_id = []
 
-        # Register the methods as event handlers
+        # Register event handlers
         self.event(MessageEv)(self.on_message)
         self.event(ConnectedEv)(self.on_connected)
         self.event(GroupInfoEv)(self.on_groupevent)
@@ -41,7 +37,7 @@ class Void(NewClient):
         self.event(PairStatusEv)(self.on_pair_status)
         self.event.paircode(self.on_paircode)
 
-        # Register all the methords from client utils
+        # Register utils
         self.extract_text = extract_text
         self.FFmpeg = FFmpeg
         self.save_file_to_temp_directory = save_file_to_temp_directory
@@ -73,10 +69,19 @@ class Void(NewClient):
         self.db = Database(config.uri)
         self.log = log
 
+    # ---- New send_message with mentions support ----
+    def send_message(self, jid: str, text: str, mentions: list[str] | None = None):
+        payload = {"text": text}
+        if mentions:
+            payload["contextInfo"] = {"mentionedJid": mentions}
+        # _send is your internal sending method
+        self._send(payload, jid)
+
+    # ----------------------------------------------
+
     def on_message(self, _: NewClient, message: MessageEv):
         if message.Info.ID not in self.__msg_id:
             from libs import MessageClass
-
             self.__msg_id.append(message.Info.ID)
             self.__message.handler(MessageClass(self, message).build())
 
