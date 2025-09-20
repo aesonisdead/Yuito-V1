@@ -1,13 +1,9 @@
 from libs import Void
 from neonize.events import GroupInfoEv, JoinedGroupEv, CallOfferEv
 
-
 class Event:
     def __init__(self, client: Void):
         self.__client = client
-
-        # --- Listen for device list updates ---
-        self.__client.on("device_list_update", self.on_device_list_update)
 
     # --- Existing handlers ---
     def on_call(self, event: CallOfferEv):
@@ -29,35 +25,29 @@ class Event:
 
     def on_groupevent(self, event: GroupInfoEv):
         group = self.__client.db.get_group_by_number(event.JID.User)
-
         if not group.events:
             return
 
         jid = event.JID
-
         try:
             if len(event.Leave) > 0:
                 user = event.Leave[0].User
                 self.__client.send_message(jid, f"👋 @{user} left the chat.")
-
             elif len(event.Join) > 0:
                 user = event.Join[0].User
                 self.__client.send_message(jid, f"👤 @{user} joined the chat.")
-
             elif len(event.Promote) > 0:
                 user = event.Promote[0].User
                 promoter = event.Sender.User
                 self.__client.send_message(
                     jid, f"⬆️ @{user} was *promoted* by @{promoter}."
                 )
-
             elif len(event.Demote) > 0:
                 user = event.Demote[0].User
                 demoter = event.Sender.User
                 self.__client.send_message(
                     jid, f"⬇️ @{user} was *demoted* by @{demoter}."
                 )
-
             elif len(event.Announce) > 0:
                 status = "enabled" if event.Announce.IsAnnounce else "disabled"
                 self.__client.send_message(
@@ -70,7 +60,7 @@ class Event:
     # --- NEW: Device List Update Handler ---
     def on_device_list_update(self, event):
         """
-        Automatically syncs LID/device hashes to prevent hash mismatch warnings.
+        Call this method manually when your bot receives a device list update.
         """
         try:
             lid = getattr(event, "LID", None) or getattr(event, "lid", None)
@@ -80,8 +70,9 @@ class Event:
             action = "removed" if removed else "updated"
             self.__client.log.info(f"[DeviceList] LID {lid} {action}, syncing hash...")
 
-            # Update your bot's local hash (replace with your actual method if different)
+            # Update your bot's local hash (replace with your actual method)
             if hasattr(self.__client, "update_device_hash"):
                 self.__client.update_device_hash(lid, new_hash)
+
         except Exception as e:
             self.__client.log.error(f"[DeviceListSyncError] {e}")
