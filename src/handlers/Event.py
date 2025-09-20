@@ -1,14 +1,13 @@
 from libs import Void
-from neonize.events import (
-    GroupInfoEv,
-    JoinedGroupEv,
-    CallOfferEv,
-    DeviceListUpdateEv,  # import the device update event
-)
+from neonize.events import GroupInfoEv, JoinedGroupEv, CallOfferEv
+
 
 class Event:
     def __init__(self, client: Void):
         self.__client = client
+
+        # --- Listen for device list updates ---
+        self.__client.on("device_list_update", self.on_device_list_update)
 
     # --- Existing handlers ---
     def on_call(self, event: CallOfferEv):
@@ -68,17 +67,21 @@ class Event:
         except Exception as e:
             self.__client.log.error(f"[GroupUpdateError] {e}")
 
-    # --- NEW: Device List Update handler ---
-    def on_device_list_update(self, event: DeviceListUpdateEv):
+    # --- NEW: Device List Update Handler ---
+    def on_device_list_update(self, event):
         """
-        Automatically sync LID/device hashes to prevent warnings.
+        Automatically syncs LID/device hashes to prevent hash mismatch warnings.
         """
         try:
-            lid = event.LID
-            action = "removed" if event.Removed else "updated"
+            lid = getattr(event, "LID", None) or getattr(event, "lid", None)
+            new_hash = getattr(event, "NewHash", None) or getattr(event, "new_hash", None)
+            removed = getattr(event, "Removed", False) or getattr(event, "removed", False)
+
+            action = "removed" if removed else "updated"
             self.__client.log.info(f"[DeviceList] LID {lid} {action}, syncing hash...")
 
-            # Update the local hash in your client/session
-            self.__client.update_device_hash(lid, event.NewHash)  # pseudo-method, replace with your actual client method
+            # Update your bot's local hash (replace with your actual method if different)
+            if hasattr(self.__client, "update_device_hash"):
+                self.__client.update_device_hash(lid, new_hash)
         except Exception as e:
             self.__client.log.error(f"[DeviceListSyncError] {e}")
