@@ -70,15 +70,14 @@ class Void(NewClient):
         self.log = log
 
         # -----------------------------
-        # Patch send_message for mentions (safe)
+        # Patch send_message for mentions (final)
         # -----------------------------
-        _orig_send = super().send_message  # save original method
+        _orig_send = super().send_message
 
         def _patched_send(jid: str, text: str, mentions: list[str] | None = None, **kwargs):
-            payload = {"text": text}
             if mentions:
-                payload["mentionedJid"] = mentions  # correct field for mentions
-            return _orig_send(jid, **payload, **kwargs)
+                kwargs["mentionedJid"] = mentions  # correct for Neonize
+            return _orig_send(jid, text, **kwargs)  # text passed positionally
 
         self.send_message = _patched_send
         # -----------------------------
