@@ -1,6 +1,8 @@
 from libs import BaseCommand, MessageClass
 
+
 class Command(BaseCommand):
+
     def __init__(self, client, handler):
         super().__init__(
             client,
@@ -14,17 +16,9 @@ class Command(BaseCommand):
         )
 
     def exec(self, M: MessageClass, _):
-        # Get user info
-        user_number = M.sender.number
-        user_jid = getattr(M.sender, "jid", M.sender.number + "@c.us")  # fallback just in case
-        exp = getattr(M.sender, "exp", 0) or 0
+        user = self.client.db.get_user_by_number(M.sender.number)
+        exp = getattr(user, "exp", 0)
 
-        # Build the message text
-        text = f"🎯 Hey *@{user_number}*! Your current EXP is: *{exp}*."
-
-        # Send message and tag the user
-        self.client.send_message(
-            M.gcjid if M.chat == "group" else user_jid,  # group or DM
-            text,
-            mentions=[user_jid]  # this triggers proper tagging
+        self.client.reply_message(
+            f"🎯 Hey *@{M.sender.number}*! Your current EXP is: *{exp}*.", M
         )
