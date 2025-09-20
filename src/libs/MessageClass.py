@@ -11,34 +11,34 @@ class MessageClass:
         self.Info = message.Info
         self.Message = message.Message
         self.content = client.extract_text(self.Message)
-        self.gcjid = self.Info.MessageSource.Chat
+        self.gcjid = self.Info.MessageSource.Chat  # chat JID (group or dm)
         self.chat = "group" if self.Info.MessageSource.IsGroup else "dm"
 
+        # ---- Sender info ----
         sender_number = self.Info.MessageSource.Sender.User
         sender_jid = f"{sender_number}@c.us"  # full WhatsApp JID
-
         self.sender = DynamicConfig(
             {
-                "number": sender_number,   # just numeric ID
-                "jid": sender_jid,         # full WhatsApp JID for mentions
-                "username": client.contact.get_contact(
-                    client.build_jid(sender_number)
-                ).PushName,
+                "number": sender_number,
+                "jid": sender_jid,
+                "username": client.contact.get_contact(client.build_jid(sender_number)).PushName,
             }
         )
 
+        # ---- Initialize additional fields ----
         self.urls = []
         self.numbers = []
         self.quoted = None
         self.quoted_user = None
         self.mentioned = []
 
+        # ---- Handle quoted messages and mentions ----
         if self.Message.HasField("extendedTextMessage"):
             ctx_info = self.Message.extendedTextMessage.contextInfo
 
+            # Quoted message
             if ctx_info.HasField("quotedMessage"):
                 self.quoted = ctx_info.quotedMessage
-
                 if ctx_info.HasField("participant"):
                     quoted_number = ctx_info.participant.split("@")[0]
                     quoted_jid = f"{quoted_number}@c.us"
@@ -46,12 +46,11 @@ class MessageClass:
                         {
                             "number": quoted_number,
                             "jid": quoted_jid,
-                            "username": client.contact.get_contact(
-                                client.build_jid(quoted_number)
-                            ).PushName,
+                            "username": client.contact.get_contact(client.build_jid(quoted_number)).PushName,
                         }
                     )
 
+            # Mentions
             for jid in ctx_info.mentionedJID:
                 number = jid.split("@")[0]
                 self.mentioned.append(
@@ -59,17 +58,17 @@ class MessageClass:
                         {
                             "number": number,
                             "jid": jid,
-                            "username": client.contact.get_contact(
-                                client.build_jid(number)
-                            ).PushName,
+                            "username": client.contact.get_contact(client.build_jid(number)).PushName,
                         }
                     )
                 )
 
     def build(self):
+        # Extract URLs and numbers from message content
         self.urls = self.__client.utils.get_urls(self.content)
         self.numbers = self.__client.utils.extract_numbers(self.content)
 
+        # If message is in a group, fetch group info
         if self.chat == "group":
             self.group = self.__client.get_group_info(self.gcjid)
             self.isAdminMessage = (
