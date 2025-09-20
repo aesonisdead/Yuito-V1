@@ -10,7 +10,7 @@ class Command(BaseCommand):
             {
                 "command": "whoami",
                 "category": "core",
-                "aliases": ["profile"],
+                "aliases": ["profile", "p"],
                 "description": {
                     "content": "Display user's information.",
                     "usage": "<@mention>",
