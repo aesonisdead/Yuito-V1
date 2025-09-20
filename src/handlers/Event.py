@@ -22,68 +22,73 @@ class Event:
         self.__client.update_blocklist(jid, self.__client.BlocklistAction.BLOCK)
 
     def on_joined(self, event: JoinedGroupEv):
-        self.__client.send_message(
-            event.GroupInfo.JID,
-            f"Thanks for adding me in {event.GroupInfo.GroupName.Name}!!\nUse {self.__client.config.prefix}help to see the commands",
-        )
+        try:
+            jid = str(event.GroupInfo.JID)
+            group_name = event.GroupInfo.GroupName.Name
+            self.__client.send_message(
+                jid,
+                f"Thanks for adding me in {group_name}!!\nUse {self.__client.config.prefix}help to see the commands",
+            )
+        except Exception as e:
+            self.__client.log.error(f"[JoinEventError] {e}")
 
     def on_groupevent(self, event: GroupInfoEv):
-    group = self.__client.db.get_group_by_number(event.JID.User)
-      if not group.events:
-        return
+        group = self.__client.db.get_group_by_number(event.JID.User)
+        if not group.events:
+            return
 
-    jid = str(event.JID)
+        jid = str(event.JID)
 
-      try:
-          if len(event.Leave) > 0:
-            user = str(event.Leave[0].User)
-            phone = user.replace("@c.us", "")
-            self.__client.send_message(
-                jid,
-                f"👋 @{phone} left the chat.",
-                mentions=[user]
-            )
+        try:
+            if len(event.Leave) > 0:
+                user = str(event.Leave[0].User)
+                phone = user.replace("@c.us", "")
+                self.__client.send_message(
+                    jid,
+                    f"👋 @{phone} left the chat.",
+                    mentions=[user],
+                )
 
-          elif len(event.Join) > 0:
-            user = str(event.Join[0].User)
-            phone = user.replace("@c.us", "")
-            self.__client.send_message(
-                jid,
-                f"👤 @{phone} joined the chat.",
-                mentions=[user]
-            )
+            elif len(event.Join) > 0:
+                user = str(event.Join[0].User)
+                phone = user.replace("@c.us", "")
+                self.__client.send_message(
+                    jid,
+                    f"👤 @{phone} joined the chat.",
+                    mentions=[user],
+                )
 
-          elif len(event.Promote) > 0:
-            user = str(event.Promote[0].User)
-            promoter = str(event.Sender.User)
-            phone = user.replace("@c.us", "")
-            promoter_phone = promoter.replace("@c.us", "")
-            self.__client.send_message(
-                jid,
-                f"⬆️ @{phone} was *promoted* by @{promoter_phone}.",
-                mentions=[user, promoter]
-            )
+            elif len(event.Promote) > 0:
+                user = str(event.Promote[0].User)
+                promoter = str(event.Sender.User)
+                phone = user.replace("@c.us", "")
+                promoter_phone = promoter.replace("@c.us", "")
+                self.__client.send_message(
+                    jid,
+                    f"⬆️ @{phone} was *promoted* by @{promoter_phone}.",
+                    mentions=[user, promoter],
+                )
 
-          elif len(event.Demote) > 0:
-            user = str(event.Demote[0].User)
-            demoter = str(event.Sender.User)
-            phone = user.replace("@c.us", "")
-            demoter_phone = demoter.replace("@c.us", "")
-            self.__client.send_message(
-                jid,
-                f"⬇️ @{phone} was *demoted* by @{demoter_phone}.",
-                mentions=[user, demoter]
-            )
+            elif len(event.Demote) > 0:
+                user = str(event.Demote[0].User)
+                demoter = str(event.Sender.User)
+                phone = user.replace("@c.us", "")
+                demoter_phone = demoter.replace("@c.us", "")
+                self.__client.send_message(
+                    jid,
+                    f"⬇️ @{phone} was *demoted* by @{demoter_phone}.",
+                    mentions=[user, demoter],
+                )
 
-          elif len(event.Announce) > 0:
-            status = "enabled" if event.Announce.IsAnnounce else "disabled"
-            sender = str(event.Sender.User)
-            sender_phone = sender.replace("@c.us", "")
-            self.__client.send_message(
-                jid,
-                f"📢 Announcement mode was *{status}* by @{sender_phone}.",
-                mentions=[sender]
-            )
+            elif len(event.Announce) > 0:
+                status = "enabled" if event.Announce.IsAnnounce else "disabled"
+                sender = str(event.Sender.User)
+                sender_phone = sender.replace("@c.us", "")
+                self.__client.send_message(
+                    jid,
+                    f"📢 Announcement mode was *{status}* by @{sender_phone}.",
+                    mentions=[sender],
+                )
 
-    except Exception as e:
-        self.__client.log.error(f"[GroupUpdateError] {e}")
+        except Exception as e:
+            self.__client.log.error(f"[GroupUpdateError] {e}")
