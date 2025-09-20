@@ -19,11 +19,9 @@ class Command(BaseCommand):
         user = self.client.db.get_user_by_number(M.sender.number)
         exp = getattr(user, "exp", 0)
 
-        # ✅ Correct WhatsApp mention format
-        # If M.sender.number = 212605158422
-        # Then jid = "212605158422@c.us"
-        jid = f"{M.sender.number}@c.us"
-
-        self.client.reply_message(
-            f"🎯 Hey *@{jid}*! Your current EXP is: *{exp}*.", M
-    )
+        # Use M.sender.jid for correct mentions
+        self.client.send_message(
+            M.chat_id,
+            f"🎯 Hey *@{M.sender.number}*! Your current EXP is: *{exp}*.",
+            mentions=[M.sender.jid],
+        )
