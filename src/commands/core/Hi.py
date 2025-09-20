@@ -1,8 +1,6 @@
 from libs import BaseCommand, MessageClass
 
-
 class Command(BaseCommand):
-
     def __init__(self, client, handler):
         super().__init__(
             client,
@@ -19,10 +17,8 @@ class Command(BaseCommand):
         user = self.client.db.get_user_by_number(M.sender.number)
         exp = getattr(user, "exp", 0)
 
-        chat_jid = M.gcjid  # use gcjid instead of chat_id
-
         self.client.send_message(
-            chat_jid,
-            f"🎯 Hey *@{M.sender.number}*! Your current EXP is: *{exp}*.",
-            mentions=[M.sender.jid],
+            M.gcjid,
+            f"🎯 Hey @{M.sender.number}! Your current EXP is: *{exp}*.",
+            mentions=[M.sender.jid],  # now properly tags the user
         )
