@@ -77,7 +77,7 @@ I'm *Yuito* ✨
 ➠```#advice, #animal, #charactercheck, #fact, #coinflip, #pick, #reaction, #ship```
 
 ❯──── Group ────❮
-➠```#add, #demote, #groupannounce, #poll, #groupeditlock, #grouplink, #promote, #remove, #setdesc, #setname, #setphoto, #tagall, #toggle```
+➠```#add, #demote, #groupannounce, #groupeditlock, #grouplink, #promote, #remove, #setdesc, #setname, #setphoto, #tagall, #toggle```
 
 ❯──── Media ────❮
 ➠```#play, #instagram, #tiktok, #spotify, #twitter, #facebook, #image, #ytaudio, #ytsearch, #ytvideo```
@@ -93,7 +93,7 @@ I'm *Yuito* ✨
 """
 
         # Send image from GitHub
-        image_url = "https://raw.githubusercontent.com/aesonisdead/Yuito-V1/refs/heads/main/src/IMG-20250921-WA0333.jpg"
+        image_url = "https://raw.githubusercontent.com/aesonisdead/Yuito-V1/refs/heads/main/src/Yuito.jpg"
         try:
             resp = requests.get(image_url, timeout=10)
             if resp.status_code == 200:
