@@ -71,7 +71,7 @@ I'm *Yuito* ✨
 ➠```#blocklist, #groupinfo, #help, #hi, #info, #leaderboard, #mods, #support, #whoami, #rank```
 
 ❯──── Dev ────❮
-➠```#ban, #broadcast, #disable, #enable, #eval, #unban```
+➠```#ban, #broadcast, #join, #leave, #disable, #enable, #eval, #unban```
 
 ❯──── Fun ────❮
 ➠```#advice, #animal, #charactercheck, #fact, #coinflip, #pick, #reaction, #ship```
