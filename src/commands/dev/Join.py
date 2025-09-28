@@ -1,21 +1,17 @@
-from libs import BaseCommand, MessageClass
+import os
 
 class Command(BaseCommand):
     def __init__(self, client, handler):
         super().__init__(
-            client,
-            handler,
+            client, handler,
             {
                 "command": "join",
                 "category": "dev",
-                "aliases": ["j"],
-                "description": {
-                    "content": "Join a WhatsApp group via invite link (devs only).",
-                    "usage": "<group_link>",
-                },
+                "aliases": [],
+                "description": {"content": "Join a group via link", "usage": "<group_link>"},
                 "exp": 0,
                 "devOnly": True,
-            },
+            }
         )
 
     def exec(self, M: MessageClass, contex):
@@ -23,10 +19,6 @@ class Command(BaseCommand):
         if not link:
             return self.client.reply_message("⚠️ Please provide a group invite link.", M)
 
-        # Extract the invite code from the link
-        try:
-            invite_code = link.split("/")[-1]
-            self.client.groupAcceptInvite(invite_code)  # actual method to join
-            self.client.reply_message(f"✅ Successfully joined the group.", M)
-        except Exception as e:
-            self.client.reply_message(f"❌ Failed to join the group: {str(e)}", M)
+        # Call the Node.js helper
+        os.system(f"node bot-commands.js join {link}")
+        self.client.reply_message("✅ Join command sent to Node.js bot.", M)
