@@ -8,7 +8,7 @@ class Command(BaseCommand):
             {
                 "command": "leave",
                 "category": "dev",
-                "aliases": [],
+                "aliases": ["l"],
                 "description": {
                     "content": "Make the bot leave the current group (devs only).",
                     "usage": "none",
