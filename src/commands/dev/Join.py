@@ -9,7 +9,7 @@ class Command(BaseCommand):
             {
                 "command": "join",
                 "category": "dev",
-                "aliases": [],
+                "aliases": ["j"],
                 "description": {
                     "content": "Join a WhatsApp group via invite link (devs only).",
                     "usage": "<group_link>",
