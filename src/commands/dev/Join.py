@@ -1,6 +1,5 @@
 from libs import BaseCommand, MessageClass
 
-
 class Command(BaseCommand):
     def __init__(self, client, handler):
         super().__init__(
@@ -24,8 +23,10 @@ class Command(BaseCommand):
         if not link:
             return self.client.reply_message("⚠️ Please provide a group invite link.", M)
 
+        # Extract the invite code from the link
         try:
-            self.client.join_group(link)  # replace with your actual method
-            self.client.reply_message(f"✅ Successfully joined the group: {link}", M)
+            invite_code = link.split("/")[-1]
+            self.client.groupAcceptInvite(invite_code)  # actual method to join
+            self.client.reply_message(f"✅ Successfully joined the group.", M)
         except Exception as e:
             self.client.reply_message(f"❌ Failed to join the group: {str(e)}", M)
