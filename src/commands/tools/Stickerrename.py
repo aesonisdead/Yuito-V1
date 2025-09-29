@@ -26,6 +26,7 @@ class Command(BaseCommand):
                     M,
                 )
 
+            # Ensure the replied message is a sticker
             media_type = self.client.detect_message_type(M.quoted)
             if media_type != "STICKER":
                 return self.client.reply_message(
@@ -33,16 +34,16 @@ class Command(BaseCommand):
                     M,
                 )
 
-            # parse name | pack
+            # Parse optional author and packname
             text = contex.text or ""
             parts = [part.strip() for part in text.split("|", 1)]
             author = parts[0] if len(parts) > 0 and parts[0] else f"Made by {M.sender.username}"
             pack = parts[1] if len(parts) > 1 and parts[1] else "Yuito"
 
-            # download sticker (can be static or animated)
+            # Download the sticker (works for static or animated)
             sticker_media = self.client.download_any(M.quoted)
 
-            # send again as sticker with new metadata
+            # Send it again as a sticker with the new name/pack
             self.client.send_sticker(
                 M.gcjid,
                 sticker_media,
