@@ -33,23 +33,22 @@ class Command(BaseCommand):
                     M,
                 )
 
+            # parse name | pack
             text = contex.text or ""
-            parts = text.split("|")
-            author = (
-                parts[0].strip()
-                if len(parts) > 0 and parts[0].strip()
-                else f"Made by {M.sender.username}"
-            )
-            pack = (
-                parts[1].strip()
-                if len(parts) > 1 and parts[1].strip()
-                else "Yuito"
-            )
+            parts = [part.strip() for part in text.split("|", 1)]
+            author = parts[0] if len(parts) > 0 and parts[0] else f"Made by {M.sender.username}"
+            pack = parts[1] if len(parts) > 1 and parts[1] else "Yuito"
 
+            # download sticker (can be static or animated)
             sticker_media = self.client.download_any(M.quoted)
 
+            # send again as sticker with new metadata
             self.client.send_sticker(
-                M.gcjid, sticker_media, quoted=M, name=author, packname=pack
+                M.gcjid,
+                sticker_media,
+                quoted=M,
+                name=author,
+                packname=pack,
             )
 
         except Exception as e:
