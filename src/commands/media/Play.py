@@ -36,20 +36,28 @@ class Command(BaseCommand):
             )
 
             ydl_opts = {
-                "format": "bestaudio/best",
-                "noplaylist": True,
-                "quiet": True,
-                "default_search": "ytsearch1",
-                "outtmpl": temp_outtmpl,
-                "postprocessors": [
-                    {
-                        "key": "FFmpegExtractAudio",
-                        "preferredcodec": "mp3",
-                        "preferredquality": "192",
-                    }
-                ],
+    "format": "bestaudio[ext=m4a]/bestaudio/best",
+    "noplaylist": True,
+    "quiet": True,
+    "default_search": "ytsearch1",
+    "outtmpl": temp_outtmpl,
+    "geo_bypass": True,
+    "http_headers": {
+        # Forces a faster client (Android YouTube)
+        "User-Agent": "com.google.android.youtube/19.17.34 (Linux; U; Android 11) gzip",
+        "Accept-Language": "en-US,en;q=0.9",
+    },
+    "concurrent_fragment_downloads": 10,  # speeds up multi-part downloads
+    "http_chunk_size": 1048576,  # 1MB chunks, balances speed & stability
+    "postprocessors": [
+        {
+            "key": "FFmpegExtractAudio",
+            "preferredcodec": "mp3",
+            "preferredquality": "192",
+        }
+    ],
             }
-
+            
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.extract_info(query, download=True)
 
