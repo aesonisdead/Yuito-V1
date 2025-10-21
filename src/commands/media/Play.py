@@ -31,35 +31,33 @@ class Command(BaseCommand):
         try:
             os.makedirs("downloads", exist_ok=True)
             random_filename = self.client.utils.random_alpha_string(10)
-            temp_outtmpl = os.path.join(
-                "downloads", random_filename + ".%(ext)s"
-            )
+            temp_outtmpl = os.path.join("downloads", random_filename + ".%(ext)s")
 
+            # --- Optimized yt-dlp options ---
             ydl_opts = {
-    "format": "bestaudio[ext=m4a]/bestaudio/best",
-    "noplaylist": True,
-    "quiet": True,
-    "default_search": "ytsearch1",
-    "outtmpl": temp_outtmpl,
-    "geo_bypass": True,
-    "http_headers": {
-        # Forces a faster client (Android YouTube)
-        "User-Agent": "com.google.android.youtube/19.17.34 (Linux; U; Android 11) gzip",
-        "Accept-Language": "en-US,en;q=0.9",
-    },
-    "concurrent_fragment_downloads": 10,  # speeds up multi-part downloads
-    "http_chunk_size": 1048576,  # 1MB chunks, balances speed & stability
-    "postprocessors": [
-        {
-            "key": "FFmpegExtractAudio",
-            "preferredcodec": "mp3",
-            "preferredquality": "192",
-        }
-    ],
+                "format": "bestaudio[ext=m4a]/bestaudio/best",
+                "noplaylist": True,
+                "quiet": True,
+                "default_search": "ytsearch1",
+                "outtmpl": temp_outtmpl,
+                "geo_bypass": True,
+                "http_headers": {
+                    "User-Agent": "com.google.android.youtube/19.17.34 (Linux; U; Android 11) gzip",
+                    "Accept-Language": "en-US,en;q=0.9",
+                },
+                "concurrent_fragment_downloads": 10,
+                "http_chunk_size": 1048576,  # 1MB per chunk
+                "postprocessors": [
+                    {
+                        "key": "FFmpegExtractAudio",
+                        "preferredcodec": "mp3",
+                        "preferredquality": "192",
+                    }
+                ],
             }
-            
+
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.extract_info(query, download=True)
+                info = ydl.extract_info(query, download=True)
 
             file_path = os.path.join("downloads", f"{random_filename}.mp3")
 
@@ -68,12 +66,14 @@ class Command(BaseCommand):
                     "⚠️ Downloaded file not found. Please try again.", M
                 )
 
+            # 100 MB file size check
             if os.path.getsize(file_path) > 100 * 1024 * 1024:
                 os.remove(file_path)
                 return self.client.reply_message(
-                    f"⚠️ File size exceeds 100MB limit.", M
+                    "⚠️ File size exceeds the 100MB limit.", M
                 )
 
+            # Send the audio file
             self.client.send_audio(M.gcjid, file=file_path, quoted=M)
             os.remove(file_path)
 
