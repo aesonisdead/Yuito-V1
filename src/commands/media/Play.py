@@ -39,11 +39,7 @@ class Command(BaseCommand):
                 "default_search": "ytsearch1",
                 "outtmpl": temp_outtmpl,
                 "geo_bypass": True,
-                "http_headers": {
-                    "User-Agent": "com.google.android.youtube/19.17.34 (Linux; U; Android 11) gzip",
-                    "Accept-Language": "en-US,en;q=0.9",
-                },
-                "concurrent_fragment_downloads": 10,
+                "concurrent_fragment_downloads": 5,
                 "http_chunk_size": 10485760,
                 "postprocessors": [
                     {
