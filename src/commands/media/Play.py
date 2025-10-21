@@ -28,10 +28,12 @@ class Command(BaseCommand):
         self.client.reply_message(f"🔍 *Searching for:* {query}...", M)
 
         try:
+            # Create downloads folder
             os.makedirs("downloads", exist_ok=True)
             random_filename = self.client.utils.random_alpha_string(10)
             temp_outtmpl = os.path.join("downloads", random_filename + ".%(ext)s")
 
+            # yt-dlp options with Android UA + speed optimizations
             ydl_opts = {
                 "format": "bestaudio[ext=m4a]/bestaudio/best",
                 "noplaylist": True,
@@ -40,7 +42,11 @@ class Command(BaseCommand):
                 "outtmpl": temp_outtmpl,
                 "geo_bypass": True,
                 "concurrent_fragment_downloads": 5,
-                "http_chunk_size": 10485760,
+                "http_chunk_size": 10485760,  # 10 MB
+                "http_headers": {
+                    "User-Agent": "com.google.android.youtube/19.50.51 (Linux; U; Android 12) gzip",
+                    "Accept-Language": "en-US,en;q=0.9",
+                },
                 "postprocessors": [
                     {
                         "key": "FFmpegExtractAudio",
@@ -66,7 +72,10 @@ class Command(BaseCommand):
                     "⚠️ File size exceeds the 100MB limit.", M
                 )
 
+            # Send audio to WhatsApp
             self.client.send_audio(M.gcjid, file=file_path, quoted=M)
+
+            # Remove local file
             os.remove(file_path)
 
         except Exception as e:
