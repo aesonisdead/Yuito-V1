@@ -2,7 +2,6 @@ from libs import BaseCommand, MessageClass
 import yt_dlp
 import os
 
-
 class Command(BaseCommand):
     def __init__(self, client, handler):
         super().__init__(
@@ -33,7 +32,6 @@ class Command(BaseCommand):
             random_filename = self.client.utils.random_alpha_string(10)
             temp_outtmpl = os.path.join("downloads", random_filename + ".%(ext)s")
 
-            # --- Optimized yt-dlp options ---
             ydl_opts = {
                 "format": "bestaudio[ext=m4a]/bestaudio/best",
                 "noplaylist": True,
@@ -46,7 +44,7 @@ class Command(BaseCommand):
                     "Accept-Language": "en-US,en;q=0.9",
                 },
                 "concurrent_fragment_downloads": 10,
-                "http_chunk_size": 1048576,  # 1MB per chunk
+                "http_chunk_size": 10485760,
                 "postprocessors": [
                     {
                         "key": "FFmpegExtractAudio",
@@ -57,7 +55,7 @@ class Command(BaseCommand):
             }
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(query, download=True)
+                ydl.extract_info(query, download=True)
 
             file_path = os.path.join("downloads", f"{random_filename}.mp3")
 
@@ -66,14 +64,12 @@ class Command(BaseCommand):
                     "⚠️ Downloaded file not found. Please try again.", M
                 )
 
-            # 100 MB file size check
             if os.path.getsize(file_path) > 100 * 1024 * 1024:
                 os.remove(file_path)
                 return self.client.reply_message(
                     "⚠️ File size exceeds the 100MB limit.", M
                 )
 
-            # Send the audio file
             self.client.send_audio(M.gcjid, file=file_path, quoted=M)
             os.remove(file_path)
 
